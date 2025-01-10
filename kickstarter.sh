@@ -23,11 +23,12 @@ find . -maxdepth 1 -type d -not -name '.' -exec rm -rf {} \;
 cp docker-compose.local.yml.example docker-compose.local.yml
 
 # Replace the {appname} placeholder with the name from cli argument
-sed -i '' "s/{appname}/$1/g" docker-compose.local.yml
+# sed -i '' "s/{appname}/$1/g" docker-compose.local.yml
+sed -i "s/{appname}/$1/g" docker-compose.local.yml
 
 # Download Laravel
 path=$(pwd)
-docker run -it -v $path:/var/www/html serversideup/php:8.3-cli composer create-project laravel/laravel laravel
+docker run -it -v $path:/var/www/html --user $(id -u):$(id -g) serversideup/php:8.3-cli composer create-project laravel/laravel laravel
 
 # Copy all files and folders (even hidden) from laravel to the root of the project and remove laravel folder
 cp -a laravel/. .
@@ -40,6 +41,6 @@ cp .env.example .env
 docker-compose -f docker-compose.local.yml build
 
 # Configure application key by running php artisan key:generate on the {appname}_webserver container
-docker run -it -v $path:/var/www/html serversideup/php:8.3-cli php artisan key:generate
+docker run -it -v $path:/var/www/html --user $(id -u):$(id -g) serversideup/php:8.3-cli php artisan key:generate
 
 echo "✅ Project $1 has been kickstarted successfully! Build something awesome! 🚀"
